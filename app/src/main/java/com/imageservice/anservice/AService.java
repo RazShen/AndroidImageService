@@ -29,6 +29,10 @@ public class AService extends android.app.Service {
     IntentFilter intentFilter;
     Lock mutex;
 
+    /**
+     * This method runs recursively on each folder in DCIM to extract the JPG images from it.
+     * @param e directory.
+     */
     public void getJPG(File e) {
         File[] pics = e.listFiles();
         for (int i=0; i <pics.length; i++) {
@@ -40,16 +44,22 @@ public class AService extends android.app.Service {
         }
     }
 
+    /**
+     * This method initializes the photo list from the DCIM photos.
+     */
     public void getPictures() {
         File dcim = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
         if (dcim == null) {
             return;
         }
+        this.pictures = new ArrayList<File>();
         File[] pics = dcim.listFiles();
         if (pics != null) {
             for (int i=0; i <pics.length; i++) {
                 if (pics[i].isDirectory()) {
+                    // Get JPS from the directory.
                     getJPG(pics[i]);
+                // Get local images in DCIM (not in folder).
                 } else if(pics[i].toString().endsWith(".jpg")) {
                     this.pictures.add(pics[i]);
                 }
@@ -57,6 +67,11 @@ public class AService extends android.app.Service {
         }
 
     }
+
+    /**
+     * Destructor for the service, just unregister from broadcastReceiver so we won't transfer
+     * images when the wifi flag is on.
+     */
     @Override
     public void onDestroy() {
         Toast.makeText(this, "Service Stopped", Toast.LENGTH_LONG).show();
@@ -64,16 +79,26 @@ public class AService extends android.app.Service {
         this.unregisterReceiver(this.broadcastReceiver);
     }
 
+    /**
+     * Constructor for the service (creates filter and mutex).
+     */
     @Override
     public void onCreate() {
         super.onCreate();
-        this.pictures = new ArrayList<File>();
         this.intentFilter = new IntentFilter();
         this.intentFilter.addAction("android.net.wifi.supplicant.CONNECTION_CHANGE");
         this.intentFilter.addAction("android.net.wifi.STATE_CHANGE");
         this.mutex = new ReentrantLock(true);
     }
 
+    /**
+     * This method starts the service actions, add method be activated by the broadcast receiver with
+     * the wifi filter.
+     * @param intent
+     * @param flags none.
+     * @param startId
+     * @return start_stick to always run in the background.
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "Service Started", Toast.LENGTH_LONG).show();
@@ -149,6 +174,11 @@ public class AService extends android.app.Service {
     }
 
 
+    /**
+     * This method isn't used in this project.
+     * @param intent
+     * @return
+     */
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {

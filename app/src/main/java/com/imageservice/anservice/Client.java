@@ -1,13 +1,8 @@
 package com.imageservice.anservice;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.content.Context;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -15,20 +10,23 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 
 import static java.lang.Thread.sleep;
 
 public class Client {
 
+    /**
+     *  constructor for the client.
+     */
     public Client() {
     }
 
-
-
+    /**
+     * This method sends a single picture to the tcp server.
+     * @param pic image to transfer
+     * @throws Exception
+     */
     public void connectToServerAndSend(File pic) throws Exception {
-
         try {
             //here you must put your computer's IP address.
             InetAddress serverAddr = InetAddress.getByName("10.0.2.2");
@@ -39,7 +37,7 @@ public class Client {
                 OutputStream output = socket.getOutputStream();
                 InputStream input = socket.getInputStream();
                 byte[] proveReadImage = new byte[1];
-
+                // write the image to the server
                 output.write(pic.toPath().getFileName().toString().getBytes());
                 int i = input.read(proveReadImage);
                 sleep(500);
@@ -58,14 +56,20 @@ public class Client {
 
     }
 
-    private static byte[] extractBytes (File file) throws IOException {
+    /**
+     * This method transforms the picture into bytes.
+     * @param file picture to transform
+     * @return array of bits of the picture
+     * @throws IOException
+     */
+    private static byte[] extractBytes(File file) throws IOException {
         // open image
         System.out.println(file.exists() + "!!");
         FileInputStream fis = new FileInputStream(file);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         byte[] buf = new byte[1024];
         try {
-            for (int readNum; (readNum = fis.read(buf)) != -1;) {
+            for (int readNum; (readNum = fis.read(buf)) != -1; ) {
                 bos.write(buf, 0, readNum);
                 //no doubt here is 0
                 /*Writes len bytes from the specified byte array starting at offset
